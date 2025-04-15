@@ -28,6 +28,15 @@
       width: 100%;
       margin-top: 10px;
     }
+    button {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
     .result {
       margin-top: 20px;
       padding: 10px;
@@ -71,6 +80,7 @@
       const menitHidup = (totalKebutuhan / kapasitas) * 60;
       const siklus = 5;
       const hidupPer5Menit = Math.round((menitHidup / siklus) * 60); // detik
+      const offPer5Menit = 300 - hidupPer5Menit;
 
       const suhuMin = umur <= 3 ? 33 :
                       umur <= 7 ? 31 :
@@ -81,10 +91,11 @@
       const suhuMax = suhuMin + 1;
 
       document.getElementById("hasil").innerHTML = `
-        <strong>Hasil:</strong><br>
+        <strong>Hasil Perhitungan:</strong><br>
         - Kebutuhan Ventilasi: <strong>${totalKebutuhan.toFixed(1)} m³/jam</strong><br>
-        - Ventilasi per 5 menit: <strong>${hidupPer5Menit} detik ON</strong><br>
-        - Suhu ideal: <strong>${suhuMin}°C - ${suhuMax}°C</strong>
+        - Ventilasi Intermiten per 5 Menit:<br>
+          <strong>${hidupPer5Menit} detik ON</strong> / <strong>${offPer5Menit} detik OFF</strong><br>
+        - Suhu Ideal: <strong>${suhuMin}°C - ${suhuMax}°C</strong>
       `;
     }
   </script>
