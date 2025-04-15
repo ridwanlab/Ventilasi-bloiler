@@ -1,103 +1,205 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ventilasi Minimum Broiler</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator Ventilasi Ayam Broiler</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #f0f0f0;
+    * {
+      box-sizing: border-box;
     }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      padding: 20px;
+      margin: 0;
+    }
+
     .container {
       max-width: 600px;
       margin: auto;
-      background: white;
+      background: #ffffff;
       padding: 20px;
       border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
-    h1 {
-      text-align: center;
+
+    h2 {
       color: #333;
+      text-align: center;
     }
-    label, select, input {
+
+    label {
       display: block;
-      width: 100%;
-      margin-top: 10px;
-    }
-    button {
       margin-top: 15px;
+      font-weight: 600;
+    }
+
+    input, select {
+      width: 100%;
       padding: 10px;
-      background-color: #4CAF50;
-      color: white;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background-color: #28a745;
       border: none;
-      border-radius: 4px;
+      color: white;
+      font-size: 16px;
+      border-radius: 5px;
       cursor: pointer;
     }
+
+    button:hover {
+      background-color: #218838;
+    }
+
     .result {
+      background: #e9f7ef;
+      padding: 15px;
       margin-top: 20px;
-      padding: 10px;
-      background-color: #e0f7fa;
-      border-left: 5px solid #00796b;
+      border-left: 4px solid #28a745;
+      border-radius: 5px;
+    }
+
+    .info-suhu {
+      background: #fff3cd;
+      padding: 15px;
+      margin-top: 15px;
+      border-left: 4px solid #ffc107;
+      border-radius: 5px;
+    }
+
+    @media (max-width: 480px) {
+      h2 {
+        font-size: 20px;
+      }
+
+      button {
+        font-size: 15px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Kalkulator Ventilasi Minimum</h1>
-    <label for="populasi">Jumlah Ayam (ekor):</label>
-    <input type="number" id="populasi" value="4400"/>
 
-    <label for="umur">Umur Ayam (hari):</label>
-    <input type="number" id="umur" value="12"/>
+<div class="container">
+  <h2>Kalkulator Ventilasi Ayam Broiler</h2>
 
-    <label for="kapasitas">Kapasitas Blower (m³/jam):</label>
-    <input type="number" id="kapasitas" value="20000"/>
+  <label>Jumlah Ayam (ekor)</label>
+  <input type="number" id="jumlahAyam" value="4400">
 
-    <button onclick="hitung()">Hitung</button>
+  <label>Kapasitas Blower (m³/jam)</label>
+  <input type="number" id="kapasitasBlower" value="20000">
 
-    <div class="result" id="hasil"></div>
+  <label>Pilih Ventilasi Minimum</label>
+  <select id="modeVentilasi" onchange="toggleVentilasi()">
+    <option value="auto">Berdasarkan Umur Ayam</option>
+    <option value="manual">Manual (Isi Sendiri)</option>
+  </select>
+
+  <div id="umurGroup">
+    <label>Umur Ayam (hari)</label>
+    <input type="number" id="umurAyam" value="12" oninput="updateSuhu()">
   </div>
 
-  <script>
-    function hitung() {
-      const populasi = parseInt(document.getElementById("populasi").value);
-      const umur = parseInt(document.getElementById("umur").value);
-      const kapasitas = parseInt(document.getElementById("kapasitas").value);
+  <div class="info-suhu" id="infoSuhu"></div>
 
-      let kebutuhanPerEkor = 0.3; // default m³/jam per ekor umur 12 hari
+  <div id="manualGroup" style="display:none;">
+    <label>Ventilasi Minimum (m³/jam per 1000 ekor)</label>
+    <input type="number" id="ventilasiManual" value="2500">
+  </div>
 
-      if (umur <= 7) kebutuhanPerEkor = 0.1;
-      else if (umur <= 14) kebutuhanPerEkor = 0.3;
-      else if (umur <= 21) kebutuhanPerEkor = 0.6;
-      else if (umur <= 28) kebutuhanPerEkor = 1.0;
-      else kebutuhanPerEkor = 1.5;
+  <label>Siklus Waktu (menit)</label>
+  <input type="number" id="siklusMenit" value="5">
 
-      const totalKebutuhan = kebutuhanPerEkor * populasi;
-      const menitHidup = (totalKebutuhan / kapasitas) * 60;
-      const siklus = 5;
-      const hidupPer5Menit = Math.round((menitHidup / siklus) * 60); // detik
-      const offPer5Menit = 300 - hidupPer5Menit;
+  <button onclick="hitungVentilasi()">Hitung Ventilasi</button>
 
-      const suhuMin = umur <= 3 ? 33 :
-                      umur <= 7 ? 31 :
-                      umur <= 10 ? 29 :
-                      umur <= 14 ? 28 :
-                      umur <= 21 ? 26 :
-                      umur <= 28 ? 24 : 22;
-      const suhuMax = suhuMin + 1;
+  <div class="result" id="hasil"></div>
+</div>
 
-      document.getElementById("hasil").innerHTML = `
-        <strong>Hasil Perhitungan:</strong><br>
-        - Kebutuhan Ventilasi: <strong>${totalKebutuhan.toFixed(1)} m³/jam</strong><br>
-        - Ventilasi Intermiten per 5 Menit:<br>
-          <strong>${hidupPer5Menit} detik ON</strong> / <strong>${offPer5Menit} detik OFF</strong><br>
-        - Suhu Ideal: <strong>${suhuMin}°C - ${suhuMax}°C</strong>
-      `;
+<script>
+  function toggleVentilasi() {
+    const mode = document.getElementById("modeVentilasi").value;
+    document.getElementById("umurGroup").style.display = (mode === "auto") ? "block" : "none";
+    document.getElementById("manualGroup").style.display = (mode === "manual") ? "block" : "none";
+    updateSuhu();
+  }
+
+  function getVentilasiPer1000(umur) {
+    if (umur <= 7) return 1500;
+    if (umur <= 14) return 2500;
+    if (umur <= 21) return 4000;
+    if (umur <= 28) return 6000;
+    if (umur <= 35) return 8000;
+    return 10000;
+  }
+
+  function getSuhuIdeal(umur) {
+    if (umur <= 3) return [32, 34];
+    if (umur <= 5) return [30, 32];
+    if (umur <= 7) return [29, 31];
+    if (umur <= 10) return [28, 30];
+    if (umur <= 14) return [27, 29];
+    if (umur <= 21) return [25, 28];
+    if (umur <= 28) return [23, 26];
+    if (umur <= 35) return [22, 25];
+    return [21, 24];
+  }
+
+  function updateSuhu() {
+    const umur = parseInt(document.getElementById("umurAyam").value);
+    const infoDiv = document.getElementById("infoSuhu");
+    const [min, max] = getSuhuIdeal(umur);
+
+    infoDiv.innerHTML = `<strong>Suhu Ideal untuk Umur ${umur} hari:</strong><br>
+      - Minimum: <strong>${min}°C</strong><br>
+      - Maksimum: <strong>${max}°C</strong>`;
+  }
+
+  function hitungVentilasi() {
+    updateSuhu();
+
+    const jumlahAyam = parseFloat(document.getElementById("jumlahAyam").value);
+    const kapasitasBlower = parseFloat(document.getElementById("kapasitasBlower").value);
+    const siklusMenit = parseFloat(document.getElementById("siklusMenit").value);
+    const mode = document.getElementById("modeVentilasi").value;
+
+    let ventilasiPer1000;
+    if (mode === "auto") {
+      const umur = parseFloat(document.getElementById("umurAyam").value);
+      ventilasiPer1000 = getVentilasiPer1000(umur);
+    } else {
+      ventilasiPer1000 = parseFloat(document.getElementById("ventilasiManual").value);
     }
-  </script>
+
+    const kebutuhanPerJam = (jumlahAyam / 1000) * ventilasiPer1000;
+    const kebutuhanPerSiklus = kebutuhanPerJam / 60 * siklusMenit;
+    const blowerPerDetik = kapasitasBlower / 3600;
+    const durasiON = kebutuhanPerSiklus / blowerPerDetik;
+    const durasiOFF = siklusMenit * 60 - durasiON;
+
+    document.getElementById("hasil").innerHTML = `
+      <strong>Hasil Perhitungan:</strong><br>
+      - Ventilasi minimum / 1000 ekor: <strong>${ventilasiPer1000} m³/jam</strong><br>
+      - Kebutuhan total per jam: <strong>${kebutuhanPerJam.toFixed(2)} m³</strong><br>
+      - Per ${siklusMenit} menit: <strong>${kebutuhanPerSiklus.toFixed(2)} m³</strong><br>
+      - Kapasitas blower: <strong>${blowerPerDetik.toFixed(2)} m³/detik</strong><br><br>
+      <strong>Waktu Blower:</strong><br>
+      - ON: <strong>${durasiON.toFixed(0)} detik</strong><br>
+      - OFF: <strong>${durasiOFF.toFixed(0)} detik</strong>
+    `;
+  }
+
+  // Initial suhu update
+  window.onload = updateSuhu;
+</script>
+
 </body>
 </html>
